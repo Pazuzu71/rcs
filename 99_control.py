@@ -55,6 +55,9 @@ def main():
     is_empty_dir('Temp')
     is_empty_dir('Result')
     get_zips()
+    print('Можно забирать')
+    is_empty_dir('Temp')
+    is_empty_dir('Result')
 
     for item in os.listdir():
         z = zipfile.ZipFile(item)
@@ -71,7 +74,7 @@ def main():
 
 WORK_DIR = os.getcwd()
 FTP_WORK_DIR = '//fcs_regions//Tulskaja_obl//control99docs'
-START_DATE = '20220219120000'
+START_DATE = '20220225000000'
 
 if __name__ == '__main__':
     main()
