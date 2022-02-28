@@ -43,7 +43,7 @@ def get_zips():
             name = tokkens[8]
             tokkens = name.split('_')
             date_in_name = tokkens[3]
-            if parser.parse(date_in_name) >= parser.parse(START_DATE):
+            if parser.parse(END_DATE) >= parser.parse(date_in_name) >= parser.parse(START_DATE):
                 with open(ftp_dir + '_' + name, 'wb') as f:
                     ftp.retrbinary('RETR ' + name, f.write)
     ftp.close()
@@ -75,6 +75,7 @@ def main():
 WORK_DIR = os.getcwd()
 FTP_WORK_DIR = '//fcs_regions//Tulskaja_obl//control99docs'
 START_DATE = '20220225000000'
+END_DATE = '20220331000000'
 
 if __name__ == '__main__':
     main()
