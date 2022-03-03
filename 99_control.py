@@ -20,7 +20,7 @@ def change_dir(dir_name):
 
 
 def is_empty_dir(dir_name):
-    for path, dirs, files in os.walk(dir_name):
+    for path, dirs, files in os.walk(os.path.join(WORK_DIR, dir_name)):
         for file in files:
             os.unlink(os.path.join(path, file))
 
@@ -35,17 +35,18 @@ def get_zips():
     ftp.cwd(FTP_WORK_DIR)
     change_dir('Temp')
     for ftp_dir in ftp_dirs:
-        zips = list()
-        ftp.cwd('//'.join([FTP_WORK_DIR, ftp_dir, 'currMonth']))
-        ftp.dir(zips.append)
-        for zippy in zips:
-            tokkens = zippy.split()
-            name = tokkens[8]
-            tokkens = name.split('_')
-            date_in_name = tokkens[3]
-            if parser.parse(END_DATE) >= parser.parse(date_in_name) >= parser.parse(START_DATE):
-                with open(ftp_dir + '_' + name, 'wb') as f:
-                    ftp.retrbinary('RETR ' + name, f.write)
+        for folder in ['currMonth', 'prevMonth']:
+            zips = list()
+            ftp.cwd('//'.join([FTP_WORK_DIR, ftp_dir, folder]))
+            ftp.dir(zips.append)
+            for zippy in zips:
+                tokkens = zippy.split()
+                name = tokkens[8]
+                tokkens = name.split('_')
+                date_in_name = tokkens[3]
+                if parser.parse(END_DATE) >= parser.parse(date_in_name) >= parser.parse(START_DATE):
+                    with open(ftp_dir + '_' + name, 'wb') as f:
+                        ftp.retrbinary('RETR ' + name, f.write)
     ftp.close()
 
 
@@ -74,7 +75,7 @@ def main():
 
 WORK_DIR = os.getcwd()
 FTP_WORK_DIR = '//fcs_regions//Tulskaja_obl//control99docs'
-START_DATE = '20220225000000'
+START_DATE = '20220302100000'
 END_DATE = '20220331000000'
 
 if __name__ == '__main__':
