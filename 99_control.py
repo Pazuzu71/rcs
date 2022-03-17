@@ -1,7 +1,9 @@
 import os
 from ftplib import FTP
+import datetime as dt
 from dateutil import parser
 import zipfile
+import json
 
 
 def create_dir(dir_name):
@@ -41,10 +43,10 @@ def get_zips():
             ftp.dir(zips.append)
             for zippy in zips:
                 tokkens = zippy.split()
+                date_file_str = tokkens[5] + " " + tokkens[6] + " " + tokkens[7]
+                date_file = parser.parse(date_file_str)
                 name = tokkens[8]
-                tokkens = name.split('_')
-                date_in_name = tokkens[3]
-                if parser.parse(END_DATE) >= parser.parse(date_in_name) >= parser.parse(START_DATE):
+                if parser.parse(END_DATE) >= date_file >= parser.parse(START_DATE):
                     with open(ftp_dir + '_' + name, 'wb') as f:
                         ftp.retrbinary('RETR ' + name, f.write)
     ftp.close()
@@ -56,9 +58,6 @@ def main():
     is_empty_dir('Temp')
     is_empty_dir('Result')
     get_zips()
-    print('Можно забирать')
-    is_empty_dir('Temp')
-    is_empty_dir('Result')
 
     for item in os.listdir():
         z = zipfile.ZipFile(item)
@@ -72,11 +71,33 @@ def main():
         for file in os.listdir():
             my_zip_file.write(file)
 
+    print('Можно забирать')
+    # is_empty_dir('Temp')
+    # is_empty_dir('Result')
+
+
+
+# config = {
+#     'FTP_WORK_DIR': '//fcs_regions//Tulskaja_obl//control99docs',
+#     'START_DATE': '20220317110000',
+#     'END_DATE': '20220331000000',
+# }
 
 WORK_DIR = os.getcwd()
-FTP_WORK_DIR = '//fcs_regions//Tulskaja_obl//control99docs'
-START_DATE = '20220302100000'
-END_DATE = '20220331000000'
+DATE_NOW = dt.datetime.now().strftime('%Y%m%d%H%M%S')
+
+with open(os.path.join(WORK_DIR, 'config.json')) as f:
+    config = json.load(f)
+
+FTP_WORK_DIR = config.get('FTP_WORK_DIR')
+START_DATE = config.get('START_DATE')
+END_DATE = config.get('END_DATE')
+
 
 if __name__ == '__main__':
     main()
+
+    config['START_DATE'] = DATE_NOW
+
+    with open(os.path.join(WORK_DIR, 'config.json'), 'w', encoding='utf-8') as f:
+        json.dump(config, f, indent=4, ensure_ascii=False)
