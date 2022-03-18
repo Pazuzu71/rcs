@@ -4,6 +4,7 @@ import datetime as dt
 from dateutil import parser
 import zipfile
 import json
+import paramiko
 
 
 def create_dir(dir_name):
@@ -65,8 +66,8 @@ def main():
             if xml.endswith('.xml'):
                 z.extract(xml, os.path.join(WORK_DIR, 'Result'))
     os.chdir(os.path.join(WORK_DIR, 'Result'))
-    if 'res.zip' in os.listdir():
-        os.unlink(os.path.join(WORK_DIR, 'res.zip'))
+    # if 'res.zip' in os.listdir():
+    #     os.unlink(os.path.join(WORK_DIR, 'res.zip'))
     with zipfile.ZipFile(os.path.join(WORK_DIR, 'res.zip'), 'w') as my_zip_file:
         for file in os.listdir():
             my_zip_file.write(file)
@@ -76,12 +77,27 @@ def main():
     # is_empty_dir('Result')
 
 
+def copy_to_serv():
 
-# config = {
-#     'FTP_WORK_DIR': '//fcs_regions//Tulskaja_obl//control99docs',
-#     'START_DATE': '20220317110000',
-#     'END_DATE': '20220331000000',
-# }
+    host = config.get('host')
+    user = config.get('user')
+    secret = config.get('secret')
+    port = config.get('port')
+    remote_path = config.get('remote_path')
+    local_path = f'{WORK_DIR}//Result'
+
+    transport = paramiko.Transport((host, int(port)))
+    transport.connect(username=user, password=secret)
+
+    sftp = paramiko.SFTPClient.from_transport(transport)
+
+    for file in os.listdir(local_path):
+        print(f'{local_path}//{file}')
+        print(f'{remote_path}//{file}')
+        sftp.put(f'{local_path}//{file}', f'{remote_path}//{file}')
+
+    sftp.close()
+
 
 WORK_DIR = os.getcwd()
 DATE_NOW = dt.datetime.now().strftime('%Y%m%d%H%M%S')
@@ -101,3 +117,6 @@ if __name__ == '__main__':
 
     with open(os.path.join(WORK_DIR, 'config.json'), 'w', encoding='utf-8') as f:
         json.dump(config, f, indent=4, ensure_ascii=False)
+
+    copy_to_serv()
+    print('Транспорт завершен')
