@@ -6,6 +6,7 @@ import json
 import paramiko
 import datetime as dt
 from dateutil import parser
+import sql_f_xml
 
 with open('config.json') as f:
     config = json.load(f)
@@ -70,11 +71,11 @@ for subdir in ['currMonth', 'prevMonth']:
                     isEDIBased = '{http://zakupki.gov.ru/oos/types/1}isEDIBased'
                     if root.find(f'.//{isEDIBased}').text == 'false':
                         os.unlink(f'Data//{item}')
-                    else:
-                        if to_do_transport:
-                            print(f'Транспортирую {item} на сервер приложений...', end='')
-                            sftp.put(f'Data//{item}', f'{remote_path}//{item}')
-                            print(' Успешно')
+                    # else:
+                    #     if to_do_transport:
+                    #         print(f'Транспортирую {item} на сервер приложений...', end='')
+                    #         sftp.put(f'Data//{item}', f'{remote_path}//{item}')
+                    #         print(' Успешно')
 if to_do_transport:
     sftp.close()
     print('Подключение к серверу приложений закрыто')
@@ -85,3 +86,12 @@ config['START_DATE'] = NOW_DATE.strftime('%Y%m%d%H%M%S')
 
 with open('config.json', 'w', encoding='utf-8') as f:
     json.dump(config, f, indent=4, ensure_ascii=False)
+
+with ZipFile('res.zip', 'w') as my_zip_file:
+    for file in os.listdir('Data'):
+        my_zip_file.write(f'Data//{file}', file)
+
+print('Архив готов!')
+
+sql_f_xml.get_sql()
+print('Скрипты готовы')
