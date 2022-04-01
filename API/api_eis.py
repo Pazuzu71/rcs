@@ -6,7 +6,7 @@ wsdl = "https://int44.zakupki.gov.ru/eis-integration/elact/customer-docs?wsdl"
 
 regNum = '03186000028'
 contractRegNum = '3235001366622000009'
-usertoken = 'e0d245ec-405b-4647-a893-3a7922f42be8'
+usertoken =
 
 headers = {
     "usertoken": usertoken
