@@ -1,4 +1,4 @@
 *.xml
 .idea
 *.json
-/Temp
+res.zip
