@@ -1,12 +1,16 @@
 import requests
 import os
 import xml.etree.ElementTree as ET
+import re
+import base64
+
 
 wsdl = "https://int44.zakupki.gov.ru/eis-integration/elact/customer-docs?wsdl"
 
 regNum = '03186000028'
 contractRegNum = '3235001366622000009'
-usertoken = ' '
+usertoken = ''
+
 
 headers = {
     "usertoken": usertoken
@@ -29,16 +33,17 @@ data = f'''
 </soapenv:Envelope>
 '''
 
-# req = requests.post(url=wsdl, data=data, headers=headers)
-# src = req.text
-#
-# try:
-#     os.mkdir(f'{contractRegNum}')
-# except Exception as ex:
-#     pass
+req = requests.post(url=wsdl, data=data, headers=headers)
+# print(req.text)
+src = req.text
 
-# with open(f'{contractRegNum}//lkzGetObjectList.xml', 'w') as f:
-#     f.write(src)
+try:
+    os.mkdir(f'{contractRegNum}')
+except Exception as ex:
+    pass
+
+with open(f'{contractRegNum}//lkzGetObjectList.xml', 'w') as f:
+    f.write(src)
 
 tree = ET.parse(f'{contractRegNum}//lkzGetObjectList.xml')
 root = tree.getroot()
@@ -89,25 +94,21 @@ for objectId_dict in objectIdList:
         </soapenv:Envelope>
         '''
 
-        # req = requests.post(url=wsdl, data=data, headers=headers)
-        # src = req.text
-        # with open(f'{contractRegNum}//{objectId}_{versionNumber}_{status}.xml', 'w') as f:
-        #     f.write(src)
+        req = requests.post(url=wsdl, data=data, headers=headers)
+        src = req.text
+        with open(f'{contractRegNum}//{objectId}_{versionNumber}_{status}.xml', 'w') as f:
+            f.write(src)
         with open(f'{contractRegNum}//{objectId}_{versionNumber}_{status}.xml') as f:
             src = f.read()
-        # root = ET.fromstring(src.encode("cp1251"))
-        tree = ET.parse(f'{contractRegNum}//{objectId}_{versionNumber}_{status}.xml')
-        root = tree.getroot()
-        # print(root)
-        # print(src_test)
+        pattern = r'<Контент>.*?</Контент>'
+        document_and_appendix = []
+        for _ in re.findall(pattern, src):
+            _ = _.replace('<Контент>', '').replace('</Контент>', '').strip()
+            decoded_data = base64.b64decode(_)
+            document_and_appendix.append(decoded_data.decode('cp1251'))
 
+        with open(f'{contractRegNum}//{objectId}_{versionNumber}_{status}_Документ.xml', 'w', encoding='utf-8') as f:
+            f.write(document_and_appendix[0])
 
-
-        # print(root.findall(f'.//document'))
-        # elemList = []
-        # for el in tree.iter():
-        #     elemList.append(el.tag)
-        #
-        # print(elemList)
-
-
+        with open(f'{contractRegNum}//{objectId}_{versionNumber}_{status}_Прилож.xml', 'w') as f:
+            f.write(document_and_appendix[1])
